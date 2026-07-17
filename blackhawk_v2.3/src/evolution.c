@@ -272,41 +272,34 @@ void read_gM_table(double **gM_table,double *fM_masses,double *fM_param,struct p
 }
 
 double bondi_accretion_rate(double M,struct param *parameters){
-	// This function computes the Bondi accretion rate of a BH of mass M at
-	// rest at the centre of a medium of density rho_bg and sound speed cs,
-	// with accretion eigenvalue lambda_bondi:
-	// (dM/dt)_Bondi = 4*pi*lambda_bondi*G^2*M^2*rho_bg/cs^3
+	// This function computes the Bondi-Hoyle-Lyttleton accretion rate of a BH
+	// of mass M moving at relative velocity v_rel through a medium of density
+	// rho_bg and sound speed cs, with accretion eigenvalue lambda_bondi.
 	
 	if(!parameters->bondi_accretion){
 		return 0.;
 	}
-	if(parameters->cs <= 0.){
-		printf("\n\t [bondi_accretion_rate] : ERROR NON POSITIVE SOUND SPEED !\n");
+	
+	double veff2 = pow(parameters->cs,2.);
+	if(veff2 <= 0.){
+		printf("\n\t [bondi_accretion_rate] : ERROR NON POSITIVE EFFECTIVE VELOCITY !\n");
 		fflush(stdout);
 		exit(0);
 	}
 	
-	return 4.*pi*parameters->lambda_bondi*pow(G,2.)*pow(M,2.)*parameters->rho_bg/pow(parameters->cs,3.);
+	return 4.*pi*parameters->lambda_bondi*pow(G,2.)*pow(M,2.)*parameters->rho_bg/pow(veff2,1.5);
 }
 
 double unruh_cross_section(double M,double m_i,double v){
-	// This function computes the Unruh absorption cross section of a BH of
-	// mass M for a particle of mass m_i and velocity v (in units of c).
-	
 	if(v <= 0. || v >= 1.){
 		return 0.;
 	}
-	
-	double xi = 2.*pi*G*M*m_i*(1. + pow(v,2.))/(v*sqrt(1. - pow(v,2.)));
-	double greybody;
-	if(xi < 1.e-8){
-		greybody = 1. + xi/2.;
-	}
-	else{
-		greybody = xi/(-expm1(-xi));
-	}
-	
-	return 2.*pi*pow(G,2.)*pow(M,2.)/v*greybody;
+	double Rs = 2.*G*M;
+	double p = m_i*v;                 // actual momentum at this velocity
+	double lambda_d = 1./p;
+	double xi = pi*(1. + pow(v,2.))/(pow(v,2.)*sqrt(1.-pow(v,2.)))*Rs/lambda_d;
+	double sigma = 2.*pi*pow(G,2.)*pow(M,2.)*xi/(v*(1.-exp(-xi)));
+	return sigma;
 }
 
 double unruh_accretion_rate(double M,struct param *parameters){

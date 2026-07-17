@@ -23,6 +23,7 @@
 #define leng_conversion  5.06773058e+13 // cm to GeV^(-1)
 #define rate_conversion  (1.e-100*time_conversion*pow(leng_conversion,3.)) // cm^(-3)s^(-1)GeV^(-1) to GeV^3, plus the correction of 1.e-100
 #define dens_conversion  (1.e-100*pow(leng_conversion,3.)) // cm^(-3) to GeV^3, plus the correction of 1.e-100
+#define temp_conversion. 8.617333262e-14 // boltzmann constant in GeV/K
 
 // some constants
 #define pi  				3.141592653589795
@@ -30,6 +31,7 @@
 #define G  					(6.67408e-11*pow(leng_conversion*100.,3.)/(mass_conversion*1000.)/pow(time_conversion,2.)) // Newton constant in GeV
 #define Mp  				1.221e+19 // Planck mass in GeV				
 #define alpha_em			1./137. // dimensionless electroweak coupling constant
+#define light_speed			2.99792458e+10 // cm/s, use to convert cs from cm/s to natural unit
 
 // masses of the Standard Model particles (PDG 2017) in GeV
 #define m_electron  0.5109989461e-3
