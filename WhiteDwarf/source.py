@@ -1,5 +1,5 @@
 import numpy as np
-from constants import *
+from WhiteDwarf.constants import *
 import os
 import pandas as pd
 

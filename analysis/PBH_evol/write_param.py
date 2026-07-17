@@ -74,20 +74,21 @@ params = {
 
 	"hadronization_choice": 3,
 
-	"bondi_accretion": 1,
+	"bondi_accretion": 0,
 	"cs": 2e8,
 	"lambda_bondi": 1,
 	"rho_bg": 1e6,
 
-	"unruh_accretion": 0,
+	"unruh_accretion": 1,
 	"T_unruh": 1e6,
 	"m_unruh": 938.272e-3 * 6,  # evaluated in Python: the C parser reads a single number, not an expression
 	"rho_unruh": 1e6,
 }
 
 def sweep_param(WD_rho, MPBH, BONDI, UNRUH, params):
-	params['destination_folder'] = f"PBH_evolution/M{MPBH:.3e}/rho{WD_rho:.3e}"
+	params['destination_folder'] = f"PBH_evolution/bondi/M{MPBH:.2e}/rho{WD_rho:.2e}"
 	params['Mmax'] = MPBH
+	params['Mmin'] = MPBH
 
 	params['bondi_accretion'] = BONDI
 	params['unruh_accretion'] = UNRUH
@@ -114,8 +115,8 @@ if __name__ == "__main__":
     os.chdir('../../blackhawk_v2.3')
     
     param_file = "./param.txt"
-    rho_list = np.logspace(6, 9, 10)
-    MPBH_list = np.logspace(13, 20, 10)
+    rho_list = np.logspace(6, 9, 15)
+    MPBH_list = np.logspace(13, 20, 15)
     
     for rho in rho_list:
         for MPBH in MPBH_list:

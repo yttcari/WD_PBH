@@ -1,6 +1,6 @@
 import numpy as np
-from constants import *
-from rk4 import rk4
+from WhiteDwarf.constants import *
+from WhiteDwarf.rk4 import rk4
 import matplotlib.pyplot as plt
 import helmeos
 from scipy.interpolate import interp1d
