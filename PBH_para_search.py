@@ -1,9 +1,9 @@
-from wd_setup import WhiteDwarf
-import source
+from WhiteDwarf.wd_setup import WhiteDwarf
+import WhiteDwarf.source as source
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
-from constants import *
+from WhiteDwarf.constants import *
 import os
 
 def iterate(rhoc_scaled, source_function, max_iter=20, epsilon=5e-4, DEBUG=False, **kwargs):

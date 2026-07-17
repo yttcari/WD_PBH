@@ -383,7 +383,8 @@ int read_params(struct param *parameters, char name[],int session){
 		else if(!strcasecmp(dummy,"cs"))
 		{
 			fscanf(param_file,"%s",dummy);
-			fscanf(param_file,"%lf",&(parameters->cs / light_speed)); // sound speed of the background medium, in units of c
+			fscanf(param_file,"%lf",&(parameters->cs)); 
+			parameters->cs = parameters->cs / light_speed; // sound speed of the background medium, in units of c
 		}
 		else if(!strcasecmp(dummy,"lambda_bondi"))
 		{
@@ -412,7 +413,8 @@ int read_params(struct param *parameters, char name[],int session){
 		else if(!strcasecmp(dummy,"T_unruh"))
 		{
 			fscanf(param_file,"%s",dummy);
-			fscanf(param_file,"%lf",&(parameters->T_unruh * temp_conversion)); // background temperature, in GeV
+			fscanf(param_file,"%lf",&(parameters->T_unruh)); 
+			parameters->T_unruh = parameters->T_unruh * temp_conversion;// background temperature, in GeV
 		}
 		else if(!strcasecmp(dummy,"m_unruh"))
 		{

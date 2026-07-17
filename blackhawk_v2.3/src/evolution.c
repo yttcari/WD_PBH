@@ -276,7 +276,7 @@ double bondi_accretion_rate(double M,struct param *parameters){
 	// of mass M moving at relative velocity v_rel through a medium of density
 	// rho_bg and sound speed cs, with accretion eigenvalue lambda_bondi.
 	
-	if(!parameters->bondi_accretion){
+	if(parameters->bondi_accretion == 0){
 		return 0.;
 	}
 	
@@ -308,7 +308,7 @@ double unruh_accretion_rate(double M,struct param *parameters){
 	// section over a Maxwell distribution of particles of mass m_unruh,
 	// temperature T_unruh and density rho_unruh, integrated with a Simpson rule.
 	
-	if(!parameters->unruh_accretion){
+	if(parameters->unruh_accretion == 0){
 		return 0.;
 	}
 	if(parameters->T_unruh <= 0. || parameters->m_unruh <= 0.){
@@ -443,7 +443,7 @@ void evolution_times(double *init_masses,double *init_params,double **evol_times
 			counter_M = parameters->nb_fM_masses-1; // the BH mass is decreasing
 			counter_param = parameters->nb_fM_param-1; // the BH parameter is decreasing (spin)
 			counter = 0;
-			while(counter < parameters->limit-1 && life_mass > limiting_mass){ // recursion limit, evaporation until Planck mass
+			while(counter < parameters->limit-1 && life_mass > limiting_mass && life_mass <= parameters->Mmax_fM){ // recursion limit, evaporation until Planck mass, or accretion until the table limit
 				counter_M = parameters->nb_fM_masses-1;
 				counter_param = parameters->nb_fM_param-1;
 				while(counter_M > 0 && life_mass < fM_masses[counter_M]){ // we find the closest tabulated value
@@ -571,7 +571,7 @@ void life_evolution(double ***life_masses,double ***life_params,double *life_tim
 #endif
 		for(int i = 0;i<parameters->BH_number;i++){
 			for(int j = 0;j<parameters->param_number;j++){
-				if(life_masses[i][j][current_ind] > limiting_mass){ // We continue to evolve this BH
+				if(life_masses[i][j][current_ind] > limiting_mass && life_masses[i][j][current_ind] <= parameters->Mmax_fM){ // We continue to evolve this BH
 					counters_M[i][j] = parameters->nb_fM_masses-1;
 					counters_param[i][j] = parameters->nb_fM_param-1;
 					while(counters_M[i][j] > 0 && life_masses[i][j][current_ind] < fM_masses[counters_M[i][j]]){ // we find the closest tabulated value

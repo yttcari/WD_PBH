@@ -23,7 +23,7 @@
 #define leng_conversion  5.06773058e+13 // cm to GeV^(-1)
 #define rate_conversion  (1.e-100*time_conversion*pow(leng_conversion,3.)) // cm^(-3)s^(-1)GeV^(-1) to GeV^3, plus the correction of 1.e-100
 #define dens_conversion  (1.e-100*pow(leng_conversion,3.)) // cm^(-3) to GeV^3, plus the correction of 1.e-100
-#define temp_conversion. 8.617333262e-14 // boltzmann constant in GeV/K
+#define temp_conversion	 8.617333262e-14 // boltzmann constant in GeV/K
 
 // some constants
 #define pi  				3.141592653589795
