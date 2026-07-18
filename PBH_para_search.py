@@ -32,26 +32,28 @@ def iterate(rhoc_scaled, source_function, max_iter=20, epsilon=5e-4, DEBUG=False
 
     print("===== DOESN'T CONVERGE =====")
 
-PBH_list = [1e14]
-rho_list = [1e-1, 1e-2, 1e-3, 1e0, 1e1, 1e2, 1e3]
+PBH_list = [1e15]
+rho_list = [1e-1, 1e0, 1e1, 1e2, 1e3]
+N_list = np.logspace(5, 10, 10)
+for N in N_list:
+    for PBH_M in PBH_list:
+        PBH = source.singlePBH(PBH_M, N=N)
+        new_dir = os.path.join(PBH.source_type, f'PBH_M{PBH_M:.1e}_N{N:.1e}/')
+        os.makedirs(new_dir, exist_ok=True)
+        for rho in tqdm(rho_list):
+            print(f"Working on rho: {rho}, M: {PBH_M}")
+            output_path = os.path.join(new_dir, f'rho0{rho:.3e}.csv')
+            if os.path.exists(output_path):
+                print(f"Skipping rho={rho:.3e}, file already exists")
+                continue
+            wd = iterate(rho, PBH, DEBUG=False, dr=1e-3, epsilon=1e-4, max_iter=20)
+            if wd is not None:
+                print(f"White dwarf with PBH: {wd.rbar2r(wd.R_profile[-1]):.3e} km, {wd.mbar2m(wd.M_profile[-1]):.3e} Msolar")
+                wd.write_csv(output_path)
 
+"""
 for PBH_M in PBH_list:
-    PBH = source.singlePBH(PBH_M, N=1e20)
-    new_dir = os.path.join(PBH.source_type, f'PBH_M{PBH_M:.1e}/')
-    os.makedirs(new_dir, exist_ok=True)
-    for rho in tqdm(rho_list):
-        print(f"Working on rho: {rho}, M: {PBH_M}")
-        output_path = os.path.join(new_dir, f'rho0{rho:.3e}.csv')
-        if os.path.exists(output_path):
-            print(f"Skipping rho={rho:.3e}, file already exists")
-            continue
-        wd = iterate(rho, PBH, DEBUG=False, dr=1e-3, epsilon=1e-4, max_iter=20)
-        if wd is not None:
-            print(f"White dwarf with PBH: {wd.rbar2r(wd.R_profile[-1]):.3e} km, {wd.mbar2m(wd.M_profile[-1]):.3e} Msolar")
-            wd.write_csv(output_path)
-
-for PBH_M in PBH_list:
-    PBH = source.uniformPBH(PBH_M, N=1e20, R=100*km2cm)
+    PBH = source.uniformPBH(PBH_M, N=1e10, R=100*km2cm)
     new_dir = os.path.join(PBH.source_type, f'PBH_M{PBH_M:.1e}/')
     os.makedirs(new_dir, exist_ok=True)
     for rho in tqdm(rho_list):
@@ -79,3 +81,4 @@ for PBH_M in PBH_list:
         if wd is not None:
             print(f"White dwarf with PBH: {wd.rbar2r(wd.R_profile[-1]):.3e} km, {wd.mbar2m(wd.M_profile[-1]):.3e} Msolar")
             wd.write_csv(output_path)
+"""

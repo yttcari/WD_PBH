@@ -45,7 +45,7 @@ class singlePBH:
 
     def get_spectra(self, spectra_type):
         mass = f"{self.pbhM:.0e}"
-        spectra_dir = f"/Users/caritsang/Library/CloudStorage/OneDrive-TheChineseUniversityofHongKong/01 Project/FYP_Sem1/blackhawk_v2.3/results/M{mass}/instantaneous_{spectra_type}_spectra.txt"
+        spectra_dir = f"./blackhawk_v2.3/results/M{mass}/instantaneous_{spectra_type}_spectra.txt"
 
         if not os.path.exists:
             print("The entered PBH mass has no seconary spectra computed. Please compute it using BlackHawk before you run this. TERMINATE")
@@ -65,7 +65,7 @@ class singlePBH:
         def add_pri():
             dN_dE = pri_df['photon'].values / GEV_TO_ERG
             E = pri_df['energy/particle'].values * GEV_TO_ERG
-            lumin = np.trapz(dN_dE, E)
+            lumin = np.trapezoid(dN_dE, E)
 
             return lumin
     
@@ -74,13 +74,13 @@ class singlePBH:
         # secondary spectra
         E = sec_df['energy/particle'].values * GEV_TO_ERG
 
-        sec_species_list = ["photon", "electron", "proton", "neutron"]
+        sec_species_list = ["photon", "electron"]
         for sp in sec_species_list:
             # Convert dN/dE from GeV^-1 → erg^-1
             dN_dE = sec_df[sp].values / GEV_TO_ERG
 
             # Integrate over energy
-            lumin = np.trapz(dN_dE, E)
+            lumin = np.trapezoid(dN_dE, E)
             L += lumin
 
         return L * self.N
@@ -98,7 +98,7 @@ class uniformPBH:
     
     def get_spectra(self, spectra_type):
         mass = f"{self.pbhM:.0e}"
-        spectra_dir = f"/Users/caritsang/Library/CloudStorage/OneDrive-TheChineseUniversityofHongKong/01 Project/FYP_Sem1/blackhawk_v2.3/results/M{mass}/instantaneous_{spectra_type}_spectra.txt"
+        spectra_dir = f"./blackhawk_v2.3/results/M{mass}/instantaneous_{spectra_type}_spectra.txt"
 
         if not os.path.exists:
             print("The entered PBH mass has no seconary spectra computed. Please compute it using BlackHawk before you run this. TERMINATE")
@@ -118,7 +118,7 @@ class uniformPBH:
         def add_pri():
             dN_dE = pri_df['photon'].values / GEV_TO_ERG
             E = pri_df['energy/particle'].values * GEV_TO_ERG
-            lumin = np.trapz(dN_dE, E)
+            lumin = np.trapezoid(dN_dE, E)
 
             return lumin
     
@@ -127,13 +127,13 @@ class uniformPBH:
         # secondary spectra
         E = sec_df['energy/particle'].values * GEV_TO_ERG
 
-        sec_species_list = ["photon", "electron", "proton", "neutron"]
+        sec_species_list = ["photon", "electron", ]
         for sp in sec_species_list:
             # Convert dN/dE from GeV^-1 → erg^-1
             dN_dE = sec_df[sp].values / GEV_TO_ERG
 
             # Integrate over energy
-            lumin = np.trapz(dN_dE, E)
+            lumin = np.trapezoid(dN_dE, E)
             L += lumin
 
         return L * (self.N * min(r / self.R, 1) ** 3)
@@ -159,7 +159,7 @@ class gaussianPBH:
 
     def get_spectra(self, spectra_type):
         mass = f"{self.pbhM:.0e}"
-        spectra_dir = f"/Users/caritsang/Library/CloudStorage/OneDrive-TheChineseUniversityofHongKong/01 Project/FYP_Sem1/blackhawk_v2.3/results/M{mass}/instantaneous_{spectra_type}_spectra.txt"
+        spectra_dir = f"./blackhawk_v2.3/results/M{mass}/instantaneous_{spectra_type}_spectra.txt"
 
         if not os.path.exists:
             print("The entered PBH mass has no seconary spectra computed. Please compute it using BlackHawk before you run this. TERMINATE")
@@ -179,7 +179,7 @@ class gaussianPBH:
         def add_pri():
             dN_dE = pri_df['photon'].values / GEV_TO_ERG
             E = pri_df['energy/particle'].values * GEV_TO_ERG
-            lumin = np.trapz(dN_dE, E)
+            lumin = np.trapezoid(dN_dE, E)
 
             return lumin
     
@@ -188,13 +188,13 @@ class gaussianPBH:
         # secondary spectra
         E = sec_df['energy/particle'].values * GEV_TO_ERG
 
-        sec_species_list = ["photon", "electron", "proton", "neutron"]
+        sec_species_list = ["photon", "electron"]
         for sp in sec_species_list:
             # Convert dN/dE from GeV^-1 → erg^-1
             dN_dE = sec_df[sp].values / GEV_TO_ERG
 
             # Integrate over energy
-            lumin = np.trapz(dN_dE, E)
+            lumin = np.trapezoid(dN_dE, E)
             L += lumin
 
         return L * self._N_enclosed(r)

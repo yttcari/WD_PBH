@@ -217,7 +217,12 @@ class WhiteDwarf:
 
         while np.round(rb, decimals=7) >= self.r0: # Prevent round of error
             P_photon_history.append(state[-1])
+            hydro_deri, _ = self.get_hydro_deri(rb=rb, state=state)
             deri, debug = self.get_thermo_deri(rb=rb, state=state)
+
+            # also evaluate hydro when backward integration for easier convergence
+            deri[0] = -hydro_deri[0]
+            deri[1] = -hydro_deri[1]
             dPdr_photon_history.append(deri[2])
             state =  rk4(self.get_thermo_deri, dr=-self.dr, rb=rb, state=state)  
             state[0] = self.rho_interp(rb)
