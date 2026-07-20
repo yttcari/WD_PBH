@@ -95,6 +95,17 @@ class WhiteDwarf:
 
         dudr = 3 * L / (4 * np.pi * l * c * (r ** 2)) # erg cm^-4 s^-1
         return -dudr/3
+
+    def fermi_energy(self, rho):
+        """
+        input: rho in g/cm3
+        output: fermi energy in GeV
+        """
+        n_e = rho * self.Ye / mp
+        p_F = hbar * (3. * np.pi**2 * n_e) ** (1/3)
+        x = p_F / (me * c)
+        E_F = me * c**2 * (np.sqrt(1. + x**2) - 1.)
+        return E_F / 1.602e-3 # return GeV
     
     def get_proton_pressure(self, rb, m, rho, T):
         # Input are all dimensionless parameters
@@ -205,7 +216,7 @@ class WhiteDwarf:
 
     def thermo_integrate(self, DEBUG=False):
 
-        L = self.source.luminosity(r=self.R_profile[-1] * self.R0, m=self.M_profile[-1] * self.M0, rho=self.rho_profile[-1]*self.rho0)
+        L = self.source.luminosity(r=self.R_profile[-1] * self.R0, m=self.M_profile[-1] * self.M0, rho=self.rho_profile[-1]*self.rho0, E_fermi=self.fermi_energy(self.rho_profile[-1]*self.rho0))
         T = (L / (4 * np.pi * sigma * (self.R_profile[-1] * self.R0) ** 2)) ** 0.25
 
         rb = self.R_profile[-1]
