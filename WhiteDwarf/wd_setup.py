@@ -90,7 +90,7 @@ class WhiteDwarf:
         return dPdr from proton decay photon pressure
         """
         
-        L = self.source.luminosity(r=r, m=m, rho=rho, T=T) # erg /s
+        L = self.source.luminosity(r=r, m=m, rho=rho, T=T, E_fermi=self.fermi_energy(rho)) # erg /s
         l = self.mean_free_path(T, rho) # cm
 
         dudr = 3 * L / (4 * np.pi * l * c * (r ** 2)) # erg cm^-4 s^-1
@@ -216,7 +216,7 @@ class WhiteDwarf:
 
     def thermo_integrate(self, DEBUG=False):
 
-        L = self.source.luminosity(r=self.R_profile[-1] * self.R0, m=self.M_profile[-1] * self.M0, rho=self.rho_profile[-1]*self.rho0, E_fermi=self.fermi_energy(self.rho_profile[-1]*self.rho0))
+        L = self.source.luminosity(r=self.R_profile[-1] * self.R0, m=self.M_profile[-1] * self.M0, rho=self.rho_profile[0]*self.rho0, E_fermi=self.fermi_energy(self.rho_profile[-1]*self.rho0))
         T = (L / (4 * np.pi * sigma * (self.R_profile[-1] * self.R0) ** 2)) ** 0.25
 
         rb = self.R_profile[-1]

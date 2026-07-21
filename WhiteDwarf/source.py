@@ -56,7 +56,7 @@ class singlePBH:
 
     def luminosity(self, E_fermi, **kwargs):
         GEV_TO_ERG = 1.602176634e-3      # 1 GeV = 1.602e-3 erg
-
+        L = 0
         sec_df = self.get_spectra('secondary')
 
         # secondary spectra
@@ -100,36 +100,29 @@ class uniformPBH:
             df = pd.read_csv(spectra_dir, sep='\s+', skiprows=1)
             return df
 
-    def luminosity(self, r, **kwargs):
-        #return hbar * c**6 / (15360 * np.pi * G**2 * self.pbhM**2) * self.N
+    def luminosity(self, E_fermi, **kwargs):
         GEV_TO_ERG = 1.602176634e-3      # 1 GeV = 1.602e-3 erg
-
+        L = 0
         sec_df = self.get_spectra('secondary')
-        pri_df = self.get_spectra('primary')
-
-        # primary spectra
-        def add_pri():
-            dN_dE = pri_df['photon'].values / GEV_TO_ERG
-            E = pri_df['energy/particle'].values * GEV_TO_ERG
-            lumin = np.trapezoid(dN_dE, E)
-
-            return lumin
-    
-        L = add_pri()
 
         # secondary spectra
         E = sec_df['energy/particle'].values * GEV_TO_ERG
+        E_fermi_erg = E_fermi * GEV_TO_ERG   # E_fermi comes in as GeV (per fermi_energy()), convert to match E
 
-        sec_species_list = ["photon", "electron", ]
+        sec_species_list = ["photon", "electron"]
         for sp in sec_species_list:
-            # Convert dN/dE from GeV^-1 → erg^-1
             dN_dE = sec_df[sp].values / GEV_TO_ERG
+            E_sp = E
 
-            # Integrate over energy
-            lumin = np.trapezoid(dN_dE, E)
+            if sp == "electron":
+                mask = E_sp >= E_fermi_erg
+                E_sp = E_sp[mask]
+                dN_dE = dN_dE[mask]
+
+            lumin = np.trapezoid(dN_dE, E_sp)
             L += lumin
 
-        return L * (self.N * min(r / self.R, 1) ** 3)
+        return L * self.N
 
     
 class gaussianPBH:
