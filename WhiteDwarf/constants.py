@@ -23,3 +23,20 @@ kB = 1.38e-16 # boltzmann constant in cgs
 sigma = 5.67e-5 # stefann constant
 a = 4 * sigma / (3 * c)
 km2cm = 1000 * 100
+GEV_TO_ERG = 1.602176634e-3
+
+# Rest mass energy (GeV/c^2)
+rest_mass = {
+    "higgs": 125.2,
+    "W+-": 80.3692,
+    "Z0": 91.188,
+    "electron": 0.511 * 1e-3,
+    "muon": 105.66 * 1e-3,
+    "tau": 1.77693,
+    'up': 2.16 * 1e-3,
+    'down': 4.7 * 1e-3,
+    'charm': 1.273,
+    'top': 172.57,
+    'strange': 93.5 * 1e-3,
+    'bottom': 4.183,
+}
