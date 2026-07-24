@@ -39,11 +39,13 @@ class WhiteDwarf:
         print("Finish setting up white dwarf parameters \n")
 
     def __repr__(self):
-        if hasattr(self,'mass') and hasattr(self, 'radius'):
-            return f"Ye: {self.Ye}, k: {self.k} s-1, Core density: {self.rhobar2rho(self.rhoc_scaled):.3e} g/cc, Mass: {self.mbar2m(self.mass):.3f} Msolar, Radius: {self.rbar2r(self.radius):.3f} km"
-        else:
-            return rf"Ye: {self.Ye}, k: {self.k} s-1, Core density: {self.rhobar2rho(self.rhoc_scaled):.3e} g/cc"
-    
+        string = ""
+        if hasattr(self,'M_profile') and hasattr(self, 'R_profile'):
+            string += f"Mass: {self.mbar2m(self.mbar2m(self.M_profile[-1])):.3f} Msolar, Radius: {self.rbar2r(self.R_profile[-1]):.3f} km "
+        if hasattr(self, "T_profile"):
+            string += f"Surface Temperature: {self.T_profile[-1]:.3e}, Core Temperature: {self.T_profile[0]:.3e}"
+
+        return string
     # =================== Radiation ===================
 
     def deg_mean_free_path(self, T, rho):
