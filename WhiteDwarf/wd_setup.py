@@ -113,47 +113,33 @@ class WhiteDwarf:
             return x0
 
         theta = kB * T / (me * c**2)
+        eps = np.pi**2 * theta**2 * (2 * x0**2 + 1) / (2 * x0**4)
 
-        if theta / x0 > 0.1:
-            # non-degenerate regime
-            return (3/2) * kB * T
-
-        def eq(x):
-            return a * x**3 * (1 + np.pi**2 * theta**2 * (2*x**2+1)/(2*x**4)) - n
-
-        lo, hi = 0.5 * x0, 2.0 * x0
-        # bracket should already contain the root since the correction is small;
-        # only expand cautiously, and never past the validity floor ~ a few*theta
-        floor = 5 * theta
-        while eq(lo) > 0 and lo > floor:
-            lo *= 0.5
-        while eq(hi) < 0:
-            hi *= 2.0
-
-        if lo <= floor:
-            raise ValueError("Bracket search hit the non-degenerate regime; check n, T inputs.")
-
-        return brentq(eq, lo, hi)
-
+        return x0 * (1 - eps / 3.0)
+    
     def get_elec_int(self, rho, T):
-        # get the electron internal energy for a given r under finite temperature
-
         n = rho / (mp / self.Ye)
-        x = self.get_x(n, T)
+        if n <= 0 or T <= 0:
+            return 0.0
 
-        f = lambda x: x * (2 * x**2 - 3) * np.sqrt(x**2 + 1) + 3 * np.arcsinh(x)
+        a = 8 * np.pi * me**3 * c**3 / (3 * h**3)
+        x0 = (n / a) ** (1.0 / 3.0)
+        theta = kB * T / (me * c**2)
 
-        g = lambda x: 8 * x**3 * (np.sqrt(x**2 + 1) - 1) - f(x)
+        if theta > x0:
+            E_density = 1.5 * n * kB * T       # erg/cm^3
+        else:
+            x = self.get_x(n, T)
+            f = lambda x: x * (2*x**2 - 3) * np.sqrt(x**2+1) + 3*np.arcsinh(x)
+            g = lambda x: 8*x**3 * (np.sqrt(x**2+1) - 1) - f(x)
+            A = np.pi * me**4 * c**5 / (3*h**3)
+            E_density = A * g(x) * (
+                1 + 4*np.pi**2 * theta**2 *
+                ((3*x**2+1)*np.sqrt(x**2+1) - (2*x**2+1)) / (x*g(x))
+            )                                    # erg/cm^3
 
-        A = np.pi * me**4 * c**5 / (3 * h**3)
-
-        E = A * g(x) * (
-            1 + 4 * np.pi**2 * (kB * T / (me * c**2))**2 * (
-                ((3 * x **2 + 1) * np.sqrt(x**2 + 1) - (2 * x**2 +1)) / (x * g(x))
-            )
-        )
-
-        return E
+        E_per_particle_erg = E_density / n       # erg
+        return E_per_particle_erg / GEV_TO_ERG     
 
     def fermi_energy(self, rho):
         """
@@ -164,7 +150,7 @@ class WhiteDwarf:
         p_F = hbar * (3. * np.pi**2 * n_e) ** (1/3)
         x = p_F / (me * c)
         E_F = me * c**2 * (np.sqrt(1. + x**2) - 1.)
-        return E_F / 1.602e-3 # return GeV
+        return E_F / GEV_TO_ERG # return GeV
     
     def get_proton_pressure(self, rb, m, rho, T):
         # Input are all dimensionless parameters
