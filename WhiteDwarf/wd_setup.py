@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import helmeos
 from scipy.interpolate import interp1d
 import csv
+from scipy.optimize import brentq
 
 class WhiteDwarf:
     def __init__(self, Ye, rhoc_scaled, source,  Z=6, T0=0, dr=1e-3, r0=1e-3, A=12, **kwargs):
@@ -90,11 +91,69 @@ class WhiteDwarf:
         return dPdr from proton decay photon pressure
         """
         
-        L = self.source.luminosity(r=r, m=m, rho=rho, T=T, E_fermi=self.fermi_energy(rho)) # erg /s
+        L = self.source.luminosity(r=r, m=m, rho=rho, T=T, E_fermi=self.fermi_energy(rho), E_el_int=self.get_elec_int(T=T, rho=rho)) # erg /s
         l = self.mean_free_path(T, rho) # cm
 
         dudr = 3 * L / (4 * np.pi * l * c * (r ** 2)) # erg cm^-4 s^-1
         return -dudr/3
+
+    # =================== Electron ===================
+    
+    def elec_int(self, T):
+        # electronic internal energy for finite temperature
+        # compute x under finite T
+        import numpy as np
+
+
+    def get_x(self, n, T=0.0):
+        a = 8 * np.pi * me**3 * c**3 / (3 * h**3)
+        x0 = (n / a) ** (1.0 / 3.0)
+
+        if T == 0:
+            return x0
+
+        theta = kB * T / (me * c**2)
+
+        if theta / x0 > 0.1:
+            # non-degenerate regime
+            return (3/2) * kB * T
+
+        def eq(x):
+            return a * x**3 * (1 + np.pi**2 * theta**2 * (2*x**2+1)/(2*x**4)) - n
+
+        lo, hi = 0.5 * x0, 2.0 * x0
+        # bracket should already contain the root since the correction is small;
+        # only expand cautiously, and never past the validity floor ~ a few*theta
+        floor = 5 * theta
+        while eq(lo) > 0 and lo > floor:
+            lo *= 0.5
+        while eq(hi) < 0:
+            hi *= 2.0
+
+        if lo <= floor:
+            raise ValueError("Bracket search hit the non-degenerate regime; check n, T inputs.")
+
+        return brentq(eq, lo, hi)
+
+    def get_elec_int(self, rho, T):
+        # get the electron internal energy for a given r under finite temperature
+
+        n = rho / (mp / self.Ye)
+        x = self.get_x(n, T)
+
+        f = lambda x: x * (2 * x**2 - 3) * np.sqrt(x**2 + 1) + 3 * np.arcsinh(x)
+
+        g = lambda x: 8 * x**3 * (np.sqrt(x**2 + 1) - 1) - f(x)
+
+        A = np.pi * me**4 * c**5 / (3 * h**3)
+
+        E = A * g(x) * (
+            1 + 4 * np.pi**2 * (kB * T / (me * c**2))**2 * (
+                ((3 * x **2 + 1) * np.sqrt(x**2 + 1) - (2 * x**2 +1)) / (x * g(x))
+            )
+        )
+
+        return E
 
     def fermi_energy(self, rho):
         """
@@ -216,7 +275,12 @@ class WhiteDwarf:
 
     def thermo_integrate(self, DEBUG=False):
 
-        L = self.source.luminosity(r=self.R_profile[-1] * self.R0, m=self.M_profile[-1] * self.M0, rho=self.rho_profile[0]*self.rho0, E_fermi=self.fermi_energy(self.rho_profile[-1]*self.rho0))
+        # Boundary condition
+        L = self.source.luminosity(r=self.R_profile[-1] * self.R0, 
+                                   m=self.M_profile[-1] * self.M0, 
+                                   rho=self.rho_profile[0]*self.rho0, 
+                                   E_fermi=self.fermi_energy(self.rho_profile[-1]*self.rho0), 
+                                   E_el_int=self.get_elec_int(T=self.T_profile[-1] if hasattr(self, "T_profile") else 0, rho=self.rho_profile[0]*self.rho0))
         T = (L / (4 * np.pi * sigma * (self.R_profile[-1] * self.R0) ** 2)) ** 0.25
 
         rb = self.R_profile[-1]

@@ -35,49 +35,60 @@ class BasePBH:
 
 	def get_spectra(self, spectra_type):
 		mass = f"{self.pbhM:.0e}"
-		spectra_dir = f"../blackhawk_v2.3/results/M{mass}/instantaneous_{spectra_type}_spectra.txt"
+		spectra_dir = f"./blackhawk_v2.3/results/Hazma/M{mass}/instantaneous_{spectra_type}_spectra.txt"
 
 		if not os.path.exists(spectra_dir):
-			print("The entered PBH mass has no secondary spectra computed. Please compute it using BlackHawk before you run this. TERMINATE")
-			raise ValueError("No Secondary Spectra found")
+			print(f"The entered PBH mass has no {spectra_type} spectra computed. Please compute it using BlackHawk before you run this. TERMINATE")
+			raise ValueError(f"No {spectra_type} Spectra found")
 
 		return pd.read_csv(spectra_dir, sep=r'\s+', skiprows=1)
 
-	def luminosity(self, E_fermi, **kwargs):
+	def luminosity(self, E_fermi, E_el_int, **kwargs):
 		L = 0.
 		pri_df = self.get_spectra('primary')
 		sec_df = self.get_spectra('secondary')
 
 		E_pri = pri_df['energy/particle'].values
 		
-		no_anti_count = ['electron', 'photon', 'gluon', 'neutrinos', 'higgs', 'Z0']
+		no_anti_count = ['electron', 'photon', 'gluons', 'higgs', 'Z0',]
+		just_ignore = ['graviton', 'DM', 'neutrinos',]
+
 
 		for sp in pri_df.columns[1:]:
-			if sp not in no_anti_count:
+			# include anti_particle count
+			if sp not in no_anti_count and sp not in just_ignore: # these species do not have anti particle
 				dN_dE = pri_df[sp].values
 				m = rest_mass[sp]
 				
 				E_dep = 2.*E_pri - m
 				L += np.trapezoid(dN_dE * E_dep, E_pri)
-			elif sp != 'photon' and sp != 'electron':
+
+			# ignore photon as it's included in sec spectrum
+			# ignore electron for annhilation
+			# ignore neutrino assuming it's transparent
+			elif sp != 'photon' and sp != 'electron' and sp not in just_ignore:
 				dN_dE = pri_df[sp].values
 				m = rest_mass[sp]
 				L += np.trapezoid(dN_dE * E_pri, E_pri)
 
+		# include photon from pri spectrum and hadronization
 		E = sec_df['energy/particle'].values
 
 		dN_dE_photon = sec_df['photon'].values
 		L += np.trapezoid(dN_dE_photon * E, E)
 
+		# electronic contribution
 		dN_dE_e = 0.5 * sec_df['electron'].values
 		E_kinetic = E - rest_mass['electron'] 
 
+		# pauli blocking
 		mask = E_kinetic >= E_fermi
 		if mask.sum() >= 2:
 			E_dep_electron = E_kinetic[mask] - E_fermi
 			L += np.trapezoid(dN_dE_e[mask] * E_dep_electron, E[mask])
 
-		E_dep_positron = E + rest_mass['electron'] # TODO: Compute average KE of e- in WD
+		# annhilation energy
+		E_dep_positron = E + rest_mass['electron'] + E_el_int
 		L += np.trapezoid(dN_dE_e * E_dep_positron, E)
 
 		return L * GEV_TO_ERG * self.N

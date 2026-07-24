@@ -39,4 +39,5 @@ rest_mass = {
     'top': 172.57,
     'strange': 93.5 * 1e-3,
     'bottom': 4.183,
+    'gluons': 0,
 }
