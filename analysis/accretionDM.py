@@ -50,27 +50,32 @@ def bound_fraction(v_esc, sigma):
 
 halo = NFW_profile(rho0=0.51 * GeV_to_kg / (1e-2)**3, rs=8.1 * kpc)
 
-Mnm = 10 * Msolar     # baryon clump mass
-Rnm = 3.05e16           # cm
-T   = 150               # gas temperature [K]
+Mnm = 10 * Msolar        
+Rnm = 3.05e16            
+T   = 150                 #  [K]
+
+CAP_FRAC = 0.1  # Rdm is not allowed to exceed this fraction of d
 
 dist = np.logspace(-1, 5) * pc
 bound_dm = []
 valid_dist = []
 R_max = []
 for d in dist:
+    upper = min(1e5 * pc, CAP_FRAC * d)
+    if upper <= Rnm * 1.01:
+        continue
     try:
-        Rmax = brentq(jeans_energy, Rnm * 1.01, 1e5 * pc, args=(Mnm, Rnm, halo, d, T))
+        Rmax = brentq(jeans_energy, Rnm * 1.01, upper, args=(Mnm, Rnm, halo, d, T))
         Mdm_naive = halo.DM_mass_local(Rmax, d)
         sigma = halo.velocity_disp(d) / np.sqrt(3)
-        v_esc = np.sqrt(2 * G * (Mnm) / Rmax)
+        v_esc = np.sqrt(2 * G * (Mnm + Mdm_naive) / Rmax)
         frac = bound_fraction(v_esc, sigma)
         bound_dm.append(Mdm_naive * frac)
         valid_dist.append(d)
         R_max.append(Rmax)
-    except:
+    except Exception:
         continue
-    
+
 valid_dist = np.array(valid_dist)
 bound_dm = np.array(bound_dm)
 R_max = np.array(R_max)
@@ -85,6 +90,7 @@ ax[1].loglog(valid_dist/pc, R_max/pc)
 ax[1].set_xlabel("Distance from Halo Centre (pc)")
 ax[1].set_ylabel("Collapsed DM radius")
 
+plt.tight_layout()
 plt.show()
 """
 plt.figure(figsize=(4, 3))
